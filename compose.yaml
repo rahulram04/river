@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: river
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-river-local-only}
+      POSTGRES_DB: river
+    volumes:
+      - river_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U river -d river"]
+      interval: 5s
+      retries: 15
+  api:
+    build: ./backend
+    environment: &backend_env
+      DATABASE_URL: postgresql+psycopg://river:${POSTGRES_PASSWORD:-river-local-only}@db:5432/river
+      JIRA_MODE: ${JIRA_MODE:-mock}
+      JIRA_BASE_URL: ${JIRA_BASE_URL:-https://rahulrram04.atlassian.net}
+      JIRA_ALLOWED_PROJECT_KEYS: ${JIRA_ALLOWED_PROJECT_KEYS:-KAN}
+      JIRA_EMAIL: ${JIRA_EMAIL:-}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
+      WEB_ORIGIN: http://localhost:3000
+      COOKIE_SECURE: 'false'
+      INITIAL_PLAY_CREDITS: '1000'
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/readyz')"]
+      interval: 5s
+      retries: 20
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    environment: *backend_env
+    depends_on:
+      api:
+        condition: service_healthy
+  web:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  river_postgres:
