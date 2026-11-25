@@ -1,6 +1,6 @@
-# River
+# Workbet
 
-River is a **play-credit-only prediction market for Jira work items**. Members buy and sell binary YES/NO shares on whether a Jira issue will be in a Jira **Done-category status at a specific UTC deadline**. An LMSR market maker updates the implied probability after each trade. Each outstanding winning share pays one nonredeemable play credit after the deadline; there are no deposits, withdrawals or cash prizes.
+Workbet is a **play-credit-only prediction market for Jira work items**. Members buy and sell binary YES/NO shares on whether a Jira issue will be in a Jira **Done-category status at a specific UTC deadline**. An LMSR market maker updates the implied probability after each trade. Each outstanding winning share pays one nonredeemable play credit after the deadline; there are no deposits, withdrawals or cash prizes.
 
 **Project status:** functional development MVP, not production-hardened. The mock Jira mode has sample issues and never contacts the real Jira site. It does **not** measure individual productivity or guarantee calibrated forecasts.
 
@@ -133,8 +133,8 @@ Frontend checks (after `npm install`): `npm run typecheck && npm run build`.
 
 - This is a private small-team development app. No real-money, cryptocurrency, redemptions, credit transfers, payouts, or speculative financial claims.
 - **Do not put this development stack directly on the public Internet.** Add TLS, robust distributed rate limits, monitoring, backups, account recovery, separate secrets and code security review first. The current login limiter is process-local.
-- Jira permissions apply to the server-side Jira identity. River does not yet link individual Jira account IDs to member accounts or enforce an assignee-trading prohibition. That limitation creates conflict-of-interest risk.
-- Issue summaries and contracts are viewable by authenticated River members; do not add private ticket descriptions or tokens to responses. The current repo previously included a **tracked** `jira_issue.json` export. This new project excludes it. If you are updating an existing clone, run `git rm --cached jira_issue.json` and commit that removal. Ignore rules do not remove earlier Git history, which may require a separately approved history purge.
+- Jira permissions apply to the server-side Jira identity. Workbet does not yet link individual Jira account IDs to member accounts or enforce an assignee-trading prohibition. That limitation creates conflict-of-interest risk.
+- Issue summaries and contracts are viewable by authenticated Workbet members; do not add private ticket descriptions or tokens to responses. The current repo previously included a **tracked** `jira_issue.json` export. This new project excludes it. If you are updating an existing clone, run `git rm --cached jira_issue.json` and commit that removal. Ignore rules do not remove earlier Git history, which may require a separately approved history purge.
 - The existing historic exposed Jira token should remain revoked. Use a freshly generated token only.
 - The initial Alembic revision is designed for a fresh database; do not use `down -v` or downgrade migrations on a database containing valuable data.
 - Database-first worker polling is at-least-once; idempotent resolution prevents double payouts. Multiple worker deployments should be coordinated and monitored.
