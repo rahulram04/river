@@ -95,7 +95,7 @@ All `/api` routes except register and login require a session. Mutating protecte
 
 ## Live Jira integration
 
-See [JIRA_SETUP.md](JIRA_SETUP.md). Set `JIRA_MODE=live`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, the Jira URL and project allowlist via **server-side environment variables**, then restart API/worker. River only **reads** issue status and changelog. Each co-founder must use their own personal Jira token. Use a **new token** if one was ever shared or exposed, and never commit `.env`.
+See [JIRA_SETUP.md](JIRA_SETUP.md). Set `JIRA_MODE=live`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, the Jira URL and project allowlist via **server-side environment variables**, then restart API/worker. Workbet only **reads** issue status and changelog. Each co-founder must use their own personal Jira token. Use a **new token** if one was ever shared or exposed, and never commit `.env`.
 
 ## Project tree
 

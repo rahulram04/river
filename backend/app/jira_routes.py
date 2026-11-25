@@ -1,4 +1,4 @@
-"""Authenticated, read-only Jira status endpoints for riverbet."""
+"""Authenticated, read-only Jira status endpoints for Workbet."""
 from __future__ import annotations
 
 from datetime import datetime, timezone

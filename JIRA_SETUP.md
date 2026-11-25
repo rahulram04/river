@@ -1,4 +1,4 @@
-# River prediction market and Jira setup
+# Workbet prediction market and Jira setup
 
 This guide describes how to associate prediction-market markets with Jira
 issues. The current repository includes a read-only Jira example in
@@ -7,20 +7,20 @@ Jira issues yet.
 
 ## Intended integration
 
-Use Jira as the source of truth for the work item and River as the source of
+Use Jira as the source of truth for the work item and Workbet as the source of
 truth for market activity:
 
 ```text
 Jira issue KAN-1
     ↓ issue key
-River market "KAN-1"
+Workbet market "KAN-1"
     ↓
 LMSR prices, trades, and trader positions
 ```
 
 Recommended mapping:
 
-| River field | Jira value |
+| Workbet field | Jira value |
 | --- | --- |
 | `market_id` | Jira issue key, such as `KAN-1` |
 | Market question | Jira issue summary or a configured question |
@@ -36,7 +36,7 @@ progress; LMSR outcomes describe mutually exclusive predictions.
 - Access to the `KAN` Jira project
 - Python 3.12 or newer
 - A Jira Cloud API token associated with your own Atlassian account
-- The River backend installed from `backend/requirements.txt`
+- The Workbet backend installed from `backend/requirements.txt`
 
 Project links:
 
@@ -104,9 +104,9 @@ issue exists:
 1. Receive a Jira issue key, for example KAN-1.
 2. GET /rest/api/3/issue/KAN-1 from Jira.
 3. Check that the issue is eligible for prediction trading.
-4. Create a River market with market_id="KAN-1".
+4. Create a Workbet market with market_id="KAN-1".
 5. Store the market configuration and Jira key together.
-6. Use the River market endpoints for prices and trades.
+6. Use the Workbet market endpoints for prices and trades.
 ```
 
 The market should store configuration similar to:
@@ -160,7 +160,7 @@ Example market creation request:
 }
 ```
 
-The response should include the River `market_id`, the Jira issue key, the
+The response should include the Workbet `market_id`, the Jira issue key, the
 outcomes, and current LMSR prices. Do not send Jira credentials from clients;
 the backend should read them from its environment.
 
@@ -169,8 +169,8 @@ the backend should read them from its environment.
 Keep synchronization one-directional at first:
 
 ```text
-Jira issue metadata → River market configuration
-River trades → River database
+Jira issue metadata → Workbet market configuration
+Workbet trades → Workbet database
 ```
 
 Do not automatically edit Jira issues after every trade until the behavior is
@@ -190,7 +190,7 @@ well-defined. If synchronization is added later:
 | `401 Unauthorized` | Check the Jira email and API token. |
 | `403 Forbidden` | Confirm the account can browse the `KAN` project. |
 | `404 Not Found` | Check the Jira base URL and issue key. |
-| Market not found | Confirm the River `market_id` matches the configured issue key. |
+| Market not found | Confirm the Workbet `market_id` matches the configured issue key. |
 | Jira works but market creation fails | Check application validation and LMSR outcome configuration. |
 
 ## Git hygiene

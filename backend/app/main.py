@@ -1,4 +1,4 @@
-"""River's authenticated API. All trades use server-side session identity."""
+"""Workbet's authenticated API. All trades use server-side session identity."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -20,7 +20,7 @@ from app.services import (create_market, execute_order, find_market, grant_user,
                           position, quote, settle, sync_market, user_account, void_market, prices)
 
 settings = get_settings()
-app = FastAPI(title="River Work-Item Prediction Market", version="0.2.0",
+app = FastAPI(title="Workbet Work-Item Prediction Market", version="0.2.0",
               description="Play credits only. Prices are not calibrated probabilities.")
 app.add_middleware(CORSMiddleware, allow_origins=[settings.web_origin], allow_credentials=True,
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key"])

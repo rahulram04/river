@@ -35,7 +35,7 @@ export default function Admin(){
   }
   return <main className="shell"><div className="eyebrow">Administrator</div><h1>Manage markets</h1>
     {!user?<p>Please <Link href="/login">log in</Link>.</p>:user.role!=="ADMIN"?<p className="notice error">Admin access required.</p>:<>
-      <p className="muted">Jira mode: <strong>{user.jira_mode.toUpperCase()}</strong>. riverbet only reads Jira; no issue changes are sent back.</p>
+      <p className="muted">Jira mode: <strong>{user.jira_mode.toUpperCase()}</strong>. Workbet only reads Jira; no issue changes are sent back.</p>
       {error&&<p role="alert" className="notice error">{error}</p>}
       {success&&<p role="status" className="notice success">{success}</p>}
       <div className="split" style={{marginBottom:24}}>

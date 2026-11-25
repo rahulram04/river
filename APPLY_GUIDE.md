@@ -1,4 +1,4 @@
-# Apply the River MVP to your existing GitHub checkout
+# Apply the Workbet MVP to your existing GitHub checkout
 
 This archive is a **complete project tree** to merge into an existing `~/river` checkout. It does not contain Git history, the old tracked Jira JSON export or any Jira credentials.
 
@@ -28,7 +28,7 @@ git diff --cached --check
 git diff --cached --stat
 ```
 
-Review file changes and your own pending work before optionally running `git commit -m "Build River prediction market MVP"`. Nothing in this archive automatically pushes to GitHub or edits Jira.
+Review file changes and your own pending work before optionally running `git commit -m "Build Workbet prediction market MVP"`. Nothing in this archive automatically pushes to GitHub or edits Jira.
 
 Run the tests, then follow `README.md` to start the app. For local macOS setup without Docker, use a Python virtual environment and SQLite for single-user development. PostgreSQL is necessary to validate concurrency semantics.
 

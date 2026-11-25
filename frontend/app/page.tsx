@@ -9,8 +9,14 @@ export default function Home() {
   const {user,loading}=useAuth();
   const [markets,setMarkets]=useState<Market[]>([]);const [error,setError]=useState("");
   const [query,setQuery]=useState("");const [filter,setFilter]=useState("ALL");
-  useEffect(()=>{if(!user)return;request<{items:Market[]}>("/api/markets?limit=100")
-    .then(x=>setMarkets(x.items)).catch(x=>setError(x instanceof Error?x.message:"Failed to load markets"));},[user]);
+  useEffect(()=>{if(!user)return;
+    const load=()=>{void request<{items:Market[]}>("/api/markets?limit=100")
+      .then(x=>{setMarkets(x.items);setError("");})
+      .catch(x=>setError(x instanceof Error?x.message:"Failed to load markets"));};
+    load();
+    const timer=window.setInterval(load,5000);
+    return ()=>window.clearInterval(timer);
+  },[user]);
   const visible=useMemo(()=>markets.filter(m=>(filter==="ALL"||m.status===filter)&&
     (m.question+" "+m.jira_issue_key).toLowerCase().includes(query.toLowerCase())),[markets,filter,query]);
   return <main className="shell">
@@ -20,7 +26,7 @@ export default function Home() {
       <div className="notice">Virtual, nonredeemable credits only. Prices express market-implied probabilities, not calibrated predictions or employee performance scores.</div>
     </section>
     {loading?<p>Loading your session...</p>:!user?<div className="panel">
-      <h2>Sign in to explore riverbet</h2><p className="muted">Markets and wallets are visible only to authenticated team members.</p>
+      <h2>Sign in to explore Workbet</h2><p className="muted">Markets and wallets are visible only to authenticated team members.</p>
       <Link className="btn primary" href="/login">Log in</Link> <Link className="btn" href="/register">Create account</Link>
     </div>:<>
       <div className="between"><h2 style={{margin:0}}>Markets <span className="muted">({markets.length})</span></h2>

@@ -1,4 +1,4 @@
-"""Initial persistent River schema.
+"""Initial persistent Workbet schema.
 
 Revision ID: 0001
 Revises:

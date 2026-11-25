@@ -1,4 +1,4 @@
-# River: Claude Code implementation instructions
+# Workbet: Claude Code implementation instructions
 
 > Repository: `https://github.com/rahulram04/river`  
 > Intended location: **repository root, `CLAUDE.md`**  
@@ -6,7 +6,7 @@
 
 ## 0. Operating instructions for Claude Code
 
-You are the lead engineer implementing River. **Make code changes; do not stop after producing a plan or a list of suggestions.** Work through the phases in this file until the Definition of Done is satisfied, or report the exact external blocker and the working parts you completed.
+You are the lead engineer implementing Workbet. **Make code changes; do not stop after producing a plan or a list of suggestions.** Work through the phases in this file until the Definition of Done is satisfied, or report the exact external blocker and the working parts you completed.
 
 1. First inspect the actual checked-out repository and `git status`. Treat the checked-out code as authoritative; this document describes the starting point observed on **2026-11-18** and may become stale. Preserve unrelated changes, and do not overwrite uncommitted work.
 2. Execute the implementation in small, coherent steps, continuously running relevant tests. Prefer a clean, maintainable MVP to speculative infrastructure.
@@ -18,13 +18,13 @@ You are the lead engineer implementing River. **Make code changes; do not stop a
 
 ## 1. Product definition
 
-River is a **team forecasting layer on top of Jira**. People spend *nonredeemable virtual credits* to buy and sell YES/NO shares in objectively resolvable work-item markets. The price of YES is presented as the market's implied probability, **not as a calibrated forecast unless evidence demonstrates calibration**.
+Workbet is a **team forecasting layer on top of Jira**. People spend *nonredeemable virtual credits* to buy and sell YES/NO shares in objectively resolvable work-item markets. The price of YES is presented as the market's implied probability, **not as a calibrated forecast unless evidence demonstrates calibration**.
 
 Example contract:
 
 > **Will Jira issue KAN-1 be in a configured Done-category status at 2026-12-04 22:00:00 UTC?**
 
-The deadline is an immutable event cutoff stored in UTC. A market is successful only when River can prove whether the issue was in an eligible Done status **as of that cutoff**, including transitions into and out of Done before the cutoff. Current Jira status alone is insufficient to resolve a past deadline.
+The deadline is an immutable event cutoff stored in UTC. A market is successful only when Workbet can prove whether the issue was in an eligible Done status **as of that cutoff**, including transitions into and out of Done before the cutoff. Current Jira status alone is insufficient to resolve a past deadline.
 
 **MVP users**: a small private team, including co-founders, with individual authenticated accounts. **MVP scope**: one Jira Cloud site, one or more allowlisted projects, binary markets, play credits, backend API, responsive frontend, persistence, audited resolution, automated reconciliation, and local Docker deployment.
 
@@ -114,7 +114,7 @@ Before implementing new features:
 
 ### Market identity and data
 
-A River `market_id` is a generated UUID, **not a Jira key**. Store both `jira_issue_id` (numeric ID string, stable if the Jira key changes) and `jira_issue_key` (human-readable, may change). One Jira issue may have multiple markets with different deadlines, but reject duplicate `(jira_issue_id, deadline_at, contract_version)` combinations.
+A Workbet `market_id` is a generated UUID, **not a Jira key**. Store both `jira_issue_id` (numeric ID string, stable if the Jira key changes) and `jira_issue_key` (human-readable, may change). One Jira issue may have multiple markets with different deadlines, but reject duplicate `(jira_issue_id, deadline_at, contract_version)` combinations.
 
 Each binary market stores:
 
@@ -123,7 +123,7 @@ Each binary market stores:
 - Lifecycle: `OPEN`, `CLOSED`, `RESOLVED`, `VOID` (admin-only void); winning outcome nullable, `resolution_source`, evidence hash/reference, `resolved_at`, and audited override reason.
 - A fixed market-maker funding/subsidy entry and an auditable cumulative market cash balance.
 
-A created market must not be already expired or ineligible. Restrict market creation to configured project keys, reject issues River cannot access, and reject already-completed issues by default. Never change a contract's cutoff, YES/NO semantics, or liquidity after the first trade; simplest MVP rule: never edit them after creation.
+A created market must not be already expired or ineligible. Restrict market creation to configured project keys, reject issues Workbet cannot access, and reject already-completed issues by default. Never change a contract's cutoff, YES/NO semantics, or liquidity after the first trade; simplest MVP rule: never edit them after creation.
 
 ### Trading and deadlines
 
@@ -151,7 +151,7 @@ A created market must not be already expired or ineligible. Restrict market crea
 - Resolve only when the available data is sufficient and internally consistent. On authentication failure, Jira outage, incomplete pagination, deleted/inaccessible issue, or ambiguity, keep the market `CLOSED`, record the sync failure safely, and retry later. **Never guess an outcome.**
 - Settlement must be idempotent and single-writer safe. Payout winning positions exactly once; retain losing positions/trade history as records. Persist evidence with timestamps, source identifiers, resolver version, and minimal sanitized diagnostics.
 - Provide an admin-only audited override (require reason, previous/next outcome and actor, and explicit confirmation); no silent mutable `winning_outcome` or unaudited resettlement. Prefer forbidding override after payout unless a separately implemented compensating ledger workflow exists.
-- **One-way integration**: Jira -> River. Trading and resolution must never write to Jira.
+- **One-way integration**: Jira -> Workbet. Trading and resolution must never write to Jira.
 - **Conflicts of interest**: flag markets involving a user's own assigned issues, give the admin an option to disallow trading by issue assignees/reporters, and document manipulation risks. Default to a conservative policy for a small team (for example, restrict trading on one's own assigned issue). Do not claim prices objectively measure productivity.
 
 ## 6. Database schema and migration requirements
@@ -235,7 +235,7 @@ Implement a `JiraClient` interface with a real client and deterministic mock cli
 - `get_issue(issue_key)` obtains Jira numeric `id`, current key, summary, status ID/category, assignee ID (if needed for conflict checks), and creation timestamp.
 - `get_status_history(issue_id)` exhausts Jira status changelog pagination as required, preserves timezone-aware timestamps, and produces ordered transitions for as-of resolution.
 - Handle 401/403/404/429/5xx, timeouts, and Retry-After with bounded backoff and descriptive but sanitized errors.
-- Never silently accept partial history. Do not send Atlassian email/token from the frontend or store the full Jira response in the River DB.
+- Never silently accept partial history. Do not send Atlassian email/token from the frontend or store the full Jira response in the Workbet DB.
 - Support issue-key changes through stable issue ID. A market remains linked if the issue moves projects, but flag such changes for admin review if outside allowlisted projects.
 - Poll for updates periodically, close markets at deadlines, and resolve when historical evidence is available. Use a single CLI worker with appropriate locks; expose manual sync from admin UI. **Webhooks are optional after the polling MVP**; if implemented, authenticate and deduplicate them correctly, and continue periodic reconciliation.
 - Leave existing `jira_issue_fetch.py` as a safe CLI or refactor it to call the reusable client; do not require it for normal API startup.
@@ -288,7 +288,7 @@ Tests must **not contact the real Jira site** or require private credentials. Us
 
 ## 11. Developer experience and CI
 
-1. `README.md`: what River is, exact fresh-clone prerequisites and startup commands, no external Jira credentials needed for mock mode, architecture, MVP limitations, tests, common errors.
+1. `README.md`: what Workbet is, exact fresh-clone prerequisites and startup commands, no external Jira credentials needed for mock mode, architecture, MVP limitations, tests, common errors.
 2. `JIRA_SETUP.md`: per-cofounder Jira credentials (each person creates own token), mode switching, permissions, issue setup, status mapping, and troubleshooting. No real secrets.
 3. `.env.example`: all supported environment variables with safe defaults/placeholders; type-safe config validation. Ensure `.env.example` remains trackable despite `.env.*` ignore rule.
 4. `compose.yaml`: Postgres, backend, frontend, reconciliation worker (or documented single-worker alternative), health checks/depends-on. `docker compose up --build` from a clean clone should serve app in `JIRA_MODE=mock` after required setup. Do not depend on a hosted service.

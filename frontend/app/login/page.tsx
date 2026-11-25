@@ -17,7 +17,7 @@ export default function Login() {
   }
   return <main className="shell"><section className="panel auth-page">
     <div className="eyebrow">Welcome back</div><h1>Log in</h1>
-    <p className="muted">Use your riverbet account. Jira credentials are managed separately by the backend.</p>
+    <p className="muted">Use your Workbet account. Jira credentials are managed separately by the backend.</p>
     <form onSubmit={submit}>
       <div className="field"><label htmlFor="email">Email</label><input id="email" type="email" required value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></div>
       <div className="field"><label htmlFor="password">Password</label><input id="password" type="password" required value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></div>
