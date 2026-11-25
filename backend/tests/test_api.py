@@ -89,6 +89,92 @@ def test_market_trading_idempotency_slippage_and_ledger(api):
         assert db.scalar(select(func.count(Order.id))) == 2
 
 
+def test_positions_are_single_sided_and_switch_only_after_closing(api):
+    client, sessions = api
+    admin = login_admin(client, sessions)
+    market_id = create(client, admin["csrf_token"])
+    register(client)
+    csrf = {"X-CSRF-Token":client.get("/api/auth/me").json()["csrf_token"]}
+
+    yes_quote = client.post(f"/api/markets/{market_id}/quote", headers=csrf,
+                            json={"side":"BUY","outcome":"YES","shares":"2"}).json()
+    yes_order = client.post(
+        f"/api/markets/{market_id}/orders",
+        headers={**csrf, "Idempotency-Key":str(uuid.uuid4())},
+        json={"side":"BUY","outcome":"YES","shares":"2","max_cost":yes_quote["amount"]},
+    )
+    assert yes_order.status_code == 201, yes_order.text
+
+    no_request = {"side":"BUY","outcome":"NO","shares":"1"}
+    assert client.post(f"/api/markets/{market_id}/quote", headers=csrf,
+                       json=no_request).status_code == 409
+    assert client.post(
+        f"/api/markets/{market_id}/orders",
+        headers={**csrf, "Idempotency-Key":str(uuid.uuid4())},
+        json={**no_request, "max_cost":"100"},
+    ).status_code == 409
+
+    sell_quote = client.post(
+        f"/api/markets/{market_id}/quote", headers=csrf,
+        json={"side":"SELL","outcome":"YES","shares":"2"},
+    ).json()
+    sold = client.post(
+        f"/api/markets/{market_id}/orders",
+        headers={**csrf, "Idempotency-Key":str(uuid.uuid4())},
+        json={"side":"SELL","outcome":"YES","shares":"2",
+              "min_proceeds":sell_quote["amount"]},
+    )
+    assert sold.status_code == 201, sold.text
+
+    no_quote = client.post(f"/api/markets/{market_id}/quote", headers=csrf,
+                           json=no_request)
+    assert no_quote.status_code == 200, no_quote.text
+    no_order = client.post(
+        f"/api/markets/{market_id}/orders",
+        headers={**csrf, "Idempotency-Key":str(uuid.uuid4())},
+        json={**no_request, "max_cost":no_quote.json()["amount"]},
+    )
+    assert no_order.status_code == 201, no_order.text
+    holdings = client.get("/api/me/portfolio").json()["holdings"]
+    assert len(holdings) == 1
+    assert holdings[0]["outcome"] == "NO"
+
+
+def test_rejects_fractional_share_orders(api):
+    client, sessions = api
+    admin = login_admin(client, sessions)
+    market_id = create(client, admin["csrf_token"])
+    register(client)
+    csrf = {"X-CSRF-Token":client.get("/api/auth/me").json()["csrf_token"]}
+    fractional = {"side":"BUY","outcome":"YES","shares":"1.25"}
+
+    quote = client.post(f"/api/markets/{market_id}/quote", headers=csrf, json=fractional)
+    assert quote.status_code == 422
+    order = client.post(
+        f"/api/markets/{market_id}/orders",
+        headers={**csrf, "Idempotency-Key":str(uuid.uuid4())},
+        json={**fractional, "max_cost":"100"},
+    )
+    assert order.status_code == 422
+    assert client.get(f"/api/markets/{market_id}").json()["q_yes"] == "0.000000"
+
+    whole_quote = client.post(
+        f"/api/markets/{market_id}/quote", headers=csrf,
+        json={"side":"BUY","outcome":"YES","shares":"1"},
+    ).json()
+    bought = client.post(
+        f"/api/markets/{market_id}/orders",
+        headers={**csrf, "Idempotency-Key":str(uuid.uuid4())},
+        json={"side":"BUY","outcome":"YES","shares":"1","max_cost":whole_quote["amount"]},
+    )
+    assert bought.status_code == 201, bought.text
+    fractional_sell = client.post(
+        f"/api/markets/{market_id}/quote", headers=csrf,
+        json={"side":"SELL","outcome":"YES","shares":"0.5"},
+    )
+    assert fractional_sell.status_code == 422
+
+
 def test_rejects_unauthorized_mint_and_over_sell(api):
     client, sessions = api
     admin = login_admin(client, sessions)

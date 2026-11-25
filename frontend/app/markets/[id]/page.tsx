@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { formatTime, pct, request } from "@/lib/api";
-import type { Market, Trade } from "@/lib/types";
+import type { Holding, Market, Portfolio, Trade } from "@/lib/types";
 import { PriceChart } from "@/components/PriceChart";
 import { TradeForm } from "@/components/TradeForm";
 import { useAuth } from "@/components/AuthContext";
@@ -11,12 +11,13 @@ import { useAuth } from "@/components/AuthContext";
 export default function MarketDetail(){
   const {id}=useParams<{id:string}>();const {user}=useAuth();
   const [market,setMarket]=useState<Market|null>(null);const [history,setHistory]=useState<{at:string;yes_probability:number}[]>([]);
-  const [trades,setTrades]=useState<Trade[]>([]);const [error,setError]=useState("");
+  const [trades,setTrades]=useState<Trade[]>([]);const [positions,setPositions]=useState<Holding[]>([]);const [error,setError]=useState("");
   const load=useCallback(async()=>{
-    try{const [m,h,t]=await Promise.all([
+    try{const [m,h,t,p]=await Promise.all([
       request<Market>(`/api/markets/${id}`),request<{items:typeof history}>(`/api/markets/${id}/history`),
-      request<{items:Trade[]}>(`/api/markets/${id}/trades`) ]);
-      setMarket(m);setHistory(h.items);setTrades(t.items);setError("");
+      request<{items:Trade[]}>(`/api/markets/${id}/trades`),request<Portfolio>("/api/me/portfolio") ]);
+      setMarket(m);setHistory(h.items);setTrades(t.items);
+      setPositions(p.holdings.filter((holding:Holding)=>holding.market_id===id));setError("");
     }catch(e){setError(e instanceof Error?e.message:"Could not load market");}
   },[id]);
   useEffect(()=>{if(user)void load();},[user,load]);
@@ -50,7 +51,7 @@ export default function MarketDetail(){
             <tbody>{trades.map((t,i)=><tr key={i}><td>{t.side}</td><td>{t.outcome}</td><td>{t.shares}</td><td>{t.amount}</td><td>{formatTime(t.created_at)}</td></tr>)}</tbody>
           </table></div>}</section>
         </div>
-        <div className="stacked"><TradeForm key={market.id} market={market} onDone={load}/>
+        <div className="stacked"><TradeForm key={market.id} market={market} positions={positions} onDone={load}/>
           <div className="notice">Play credits have no cash value. Consider conflicts of interest when trading on tasks you control.</div>
         </div>
       </div>

@@ -71,6 +71,7 @@ For an initial admin, run `python -m app.seed --admin-email ...` in the backend 
 - Admin creates a unique market for a Jira numeric issue ID and immutable UTC cutoff. Current Jira key and sanitized summary are stored for display.
 - At creation, an issuance account funds the bounded LMSR market-maker subsidy. Prices start at 50/50. Play credits have no external value.
 - The API computes a quote, then enforces user ownership, balances, exact fixed-point share accounting, an explicit maximum buy cost or minimum sell proceeds, and an `Idempotency-Key` on execution.
+- A user may hold YES or NO shares in a market, but not both at once. They must sell their entire current position before buying the opposite outcome. New orders use whole shares; an existing fractional holding from an older database can only be sold down to zero.
 - Trades lock the market and affected wallet rows in PostgreSQL, write balanced double-entry ledger events and a price-history snapshot, and commit atomically. No naked `trader_id` supplied by callers is trusted.
 - At cutoff, trading stops **regardless of the reconciliation worker's scheduling**. The worker fetches Jira's entire status changelog and reconstructs the status category as of cutoff. Incomplete/inconsistent history leaves the market CLOSED, not guessed.
 - A winning YES/NO share pays one play credit; payment is unique per market and cannot be repeated. Admin may void a non-finalized market with a reason; voids pay outstanding shares at pre-void marginal prices, not as a full reversal of all prior trades.

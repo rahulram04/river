@@ -141,6 +141,21 @@ def position(db: Session, market_id: str, user_id: str, outcome: str, lock: bool
     return db.execute(query).scalar_one_or_none()
 
 
+def opposing_position(db: Session, market_id: str, user_id: str, outcome: str) -> Position | None:
+    other_outcome = "NO" if outcome == "YES" else "YES"
+    return db.execute(select(Position).where(
+        Position.market_id == market_id, Position.user_id == user_id,
+        Position.outcome == other_outcome, Position.shares > 0
+    )).scalar_one_or_none()
+
+
+def validate_order_shares(shares: int, side: str, held_position: Position | None) -> None:
+    if shares % SCALE and not (
+        side == "SELL" and held_position is not None and held_position.shares % SCALE
+    ):
+        raise HTTPException(422, "Orders must use whole shares")
+
+
 def amount_for(market: Market, side: str, outcome: str, shares: int) -> int:
     if side not in {"BUY", "SELL"} or outcome not in {"YES", "NO"} or shares <= 0:
         raise HTTPException(422, "Invalid side, outcome or share quantity")
@@ -161,9 +176,15 @@ def quote(db: Session, market_id: str, side: str, outcome: str, shares_text: str
     if m.status != "OPEN" or aware(m.cutoff) <= now():
         raise HTTPException(409, "Market is closed")
     shares = micro(shares_text, positive=True)
+    pos = position(db, market_id, user.id, outcome)
+    validate_order_shares(shares, side, pos)
     if shares > 10000 * SCALE:
         raise HTTPException(422, "Maximum 10,000 shares per order")
-    pos = position(db, market_id, user.id, outcome)
+    if side == "BUY":
+        if opposing_position(db, market_id, user.id, outcome) is not None:
+            raise HTTPException(409, f"Sell your existing position before buying {outcome}")
+        if pos is not None and pos.shares % SCALE:
+            raise HTTPException(409, "Sell your existing fractional position before buying more shares")
     if side == "SELL" and (pos is None or pos.shares < shares):
         raise HTTPException(400, "Insufficient shares to sell")
     amount = amount_for(m, side, outcome, shares)
@@ -197,6 +218,12 @@ def execute_order(db: Session, market_id: str, user: User, side: str, outcome: s
     wallet = user_account(db, user.id, lock=True)
     maker = maker_account(db, market_id, lock=True)
     pos = position(db, market_id, user.id, outcome, lock=True)
+    validate_order_shares(shares, side, pos)
+    if side == "BUY":
+        if opposing_position(db, market_id, user.id, outcome) is not None:
+            raise HTTPException(409, f"Sell your existing position before buying {outcome}")
+        if pos is not None and pos.shares % SCALE:
+            raise HTTPException(409, "Sell your existing fractional position before buying more shares")
     if side == "SELL" and (pos is None or pos.shares < shares):
         raise HTTPException(400, "Insufficient shares to sell")
     amount = amount_for(m, side, outcome, shares)
