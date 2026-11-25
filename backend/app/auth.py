@@ -18,7 +18,7 @@ from app.db_models import User, SessionToken
 from app.domain import aware, now
 
 ph = PasswordHasher()
-SESSION_COOKIE = "river_session"
+SESSION_COOKIE = "workbet_session"
 _attempts: dict[str, list[float]] = {}
 _attempt_lock = threading.Lock()
 

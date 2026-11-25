@@ -7,7 +7,7 @@ export function NavBar() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   return <header className="topbar"><div className="shell topbar-inner">
-    <Link href="/" className="logo">riverbet<span className="logo-dot">.</span></Link>
+    <Link href="/" className="logo">Workbet<span className="logo-dot">.</span></Link>
     <nav aria-label="Main navigation" className="nav-links">
       <Link href="/">Markets</Link>
       {user && <Link href="/portfolio">Portfolio</Link>}

@@ -23,7 +23,7 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
       ...init, method, headers, credentials: "include", cache: "no-store"
     });
   } catch {
-    throw new ApiError(0, "Unable to reach riverbet. Check that the backend is running.");
+    throw new ApiError(0, "Unable to reach Workbet. Check that the backend is running.");
   }
   const data = await response.json().catch(() => ({})) as { detail?: string | Array<{msg: string}> };
   if (!response.ok) {

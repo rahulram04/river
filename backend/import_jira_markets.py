@@ -1,4 +1,4 @@
-"""Preview and bulk-create riverbet markets for Jira work items.
+"""Preview and bulk-create Workbet markets for Jira work items.
 
 Place this file at backend/import_jira_markets.py and run it from backend/:
 
@@ -207,7 +207,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Discovery failed: {exc}", file=sys.stderr)
         return 1
 
-    print(f"riverbet Jira market import | Jira mode: {settings.jira_mode}")
+    print(f"Workbet Jira market import | Jira mode: {settings.jira_mode}")
     print(f"Database: {make_url(settings.database_url).render_as_string(hide_password=True)}")
     print(f"Project: {project} | Issue type: {args.issue_type or 'all'}")
     print(f"Deadline: {cutoff.isoformat()} | Liquidity: {args.liquidity}")

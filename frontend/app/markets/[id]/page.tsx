@@ -19,7 +19,11 @@ export default function MarketDetail(){
       setMarket(m);setHistory(h.items);setTrades(t.items);setError("");
     }catch(e){setError(e instanceof Error?e.message:"Could not load market");}
   },[id]);
-  useEffect(()=>{if(user)void load();},[user,load]);
+  useEffect(()=>{if(!user)return;
+    void load();
+    const timer=window.setInterval(()=>{void load();},5000);
+    return ()=>window.clearInterval(timer);
+  },[user,load]);
   return <main className="shell">
     <Link href="/" className="muted">← All markets</Link>
     {error&&<p role="alert" className="notice error" style={{marginTop:20}}>{error}</p>}

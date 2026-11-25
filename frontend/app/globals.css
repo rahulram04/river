@@ -71,7 +71,7 @@ th { color:var(--muted); font-weight:650 }
 @media(max-width:800px){.split{grid-template-columns:1fr}.nav-links{gap:12px}.shell{width:min(100% - 24px,1100px)}main{padding-top:25px}.panel{padding:18px}.topbar-inner{min-height:62px}}
 @media(max-width:460px){.nav-links{font-size:12px;gap:9px}.logo{font-size:23px}.card-list{grid-template-columns:1fr}}
 
-/* riverbet typography */
+/* Workbet typography */
 html, body, button, input, select {
   font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
 }

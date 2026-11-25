@@ -21,7 +21,7 @@ from app.domain import aware, now
 from app.jira import JiraError, JiraProvider, provider
 from app.services import settle
 
-log = logging.getLogger("riverbet.jira_sync")
+log = logging.getLogger("workbet.jira_sync")
 
 
 def reconcile_once(jira: JiraProvider | None = None) -> dict[str, int]:

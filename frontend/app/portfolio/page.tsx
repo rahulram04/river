@@ -10,8 +10,12 @@ export default function PortfolioPage(){
   const {user}=useAuth();const [portfolio,setPortfolio]=useState<Portfolio|null>(null);
   const [orders,setOrders]=useState<MyOrder[]>([]);const [error,setError]=useState("");
   useEffect(()=>{if(!user)return;
-    Promise.all([request<Portfolio>("/api/me/portfolio"),request<{items:MyOrder[]}>("/api/me/orders")])
-      .then(([p,o])=>{setPortfolio(p);setOrders(o.items);}).catch(e=>setError(e instanceof Error?e.message:"Failed to load portfolio"));
+    const load=()=>{void Promise.all([request<Portfolio>("/api/me/portfolio"),request<{items:MyOrder[]}>("/api/me/orders")])
+      .then(([p,o])=>{setPortfolio(p);setOrders(o.items);setError("");})
+      .catch(e=>setError(e instanceof Error?e.message:"Failed to load portfolio"));};
+    load();
+    const timer=window.setInterval(load,5000);
+    return ()=>window.clearInterval(timer);
   },[user]);
   return <main className="shell"><div className="eyebrow">Your account</div><h1>Portfolio</h1>
     {error&&<p role="alert" className="notice error">{error}</p>}

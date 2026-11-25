@@ -21,7 +21,7 @@ def test_postgres_concurrent_spending_and_idempotency():
     url = os.environ["TEST_DATABASE_URL"]
     if not url.startswith("postgresql"):
         pytest.skip("Requires disposable PostgreSQL instance")
-    namespace = "river_test_" + uuid.uuid4().hex[:16]
+    namespace = "workbet_test_" + uuid.uuid4().hex[:16]
     root = create_engine(url)
     # Unique schema isolates tests and allows running against a shared test PG instance.
     with root.begin() as conn:
